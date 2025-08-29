@@ -12,6 +12,8 @@ import ModulesHub from "./pages/ModulesHub";
 import PasswordModule from "./pages/modules/PasswordModule";
 import PhishingModule from "./pages/modules/PhishingModule";
 import PrivacyModule from "./pages/modules/PrivacyModule";
+import UpdatesModule from "./pages/modules/UpdatesModule";
+import BackupsModule from "./pages/modules/BackupsModule";
 import Badges from "./pages/Badges";
 import Quests from "./pages/Quests";
 import Profile from "./pages/Profile";
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/modules/password" element={<PasswordModule />} />
             <Route path="/modules/phishing" element={<PhishingModule />} />
             <Route path="/modules/privacy" element={<PrivacyModule />} />
+            <Route path="/modules/updates" element={<UpdatesModule />} />
+            <Route path="/modules/backups" element={<BackupsModule />} />
             <Route path="/badges" element={<Badges />} />
             <Route path="/quests" element={<Quests />} />
             <Route path="/profile" element={<Profile />} />

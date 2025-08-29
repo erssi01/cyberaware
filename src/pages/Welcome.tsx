@@ -1,36 +1,79 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Zap, Trophy, Users } from 'lucide-react';
+import { Shield, Zap, Trophy, Users, User, UserPlus, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGame } from '@/contexts/GameContext';
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
   const [nickname, setNickname] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
+  const [loginNickname, setLoginNickname] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
-  const handleStart = () => {
-    if (nickname && role) {
+  const handleRegister = () => {
+    if (nickname && password && role) {
       const newUser = {
         id: crypto.randomUUID(),
         nickname,
         role,
+        password,
+        isGuest: false,
         xp: 0,
         level: 1,
         streakDays: 0,
         completedModules: [],
         badges: [],
         lastActivity: new Date(),
+        hasCompletedAssessment: false,
       };
       
-      dispatch({ type: 'SET_USER', payload: newUser });
+      dispatch({ type: 'REGISTER_USER', payload: newUser });
       navigate('/assessment');
     }
+  };
+
+  const handleLogin = () => {
+    if (loginNickname && loginPassword) {
+      const existingUser = state.registeredUsers.find(
+        u => u.nickname === loginNickname && u.password === loginPassword
+      );
+      
+      if (existingUser) {
+        dispatch({ type: 'LOGIN_USER', payload: { nickname: loginNickname, password: loginPassword } });
+        // If user has completed assessment, go to dashboard, otherwise assessment
+        navigate(existingUser.hasCompletedAssessment ? '/dashboard' : '/assessment');
+      } else {
+        setLoginError('Invalid credentials. Please check your nickname and password.');
+      }
+    }
+  };
+
+  const handleGuest = () => {
+    const guestUser = {
+      id: crypto.randomUUID(),
+      nickname: `Guest${Date.now()}`,
+      role: 'guest',
+      isGuest: true,
+      xp: 0,
+      level: 1,
+      streakDays: 0,
+      completedModules: [],
+      badges: [],
+      lastActivity: new Date(),
+      hasCompletedAssessment: false,
+    };
+    
+    dispatch({ type: 'SET_USER', payload: guestUser });
+    navigate('/assessment');
   };
 
   return (
@@ -92,43 +135,135 @@ const Welcome = () => {
           <CardHeader>
             <CardTitle>Get Started</CardTitle>
             <CardDescription>
-              Create your profile to begin your cybersecurity journey
+              Create an account, login, or continue as guest
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="nickname">Nickname</Label>
-              <Input
-                id="nickname"
-                placeholder="Choose your display name"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="bg-background border-border"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="role">Role</Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="professional">Young Professional</SelectItem>
-                  <SelectItem value="researcher">Researcher</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <CardContent>
+            <Tabs defaultValue="register" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="register" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Register
+                </TabsTrigger>
+                <TabsTrigger value="login" className="flex items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="guest" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Guest
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="register" className="space-y-4 mt-4">
+                <div>
+                  <Label htmlFor="nickname">Nickname</Label>
+                  <Input
+                    id="nickname"
+                    placeholder="Choose your display name"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    className="bg-background border-border"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a secure password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-background border-border"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Select value={role} onValueChange={setRole}>
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="professional">Young Professional</SelectItem>
+                      <SelectItem value="researcher">Researcher</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <Button 
-              onClick={handleStart}
-              disabled={!nickname || !role}
-              className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
-            >
-              Start Assessment
-            </Button>
+                <Button 
+                  onClick={handleRegister}
+                  disabled={!nickname || !password || !role}
+                  className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                >
+                  Create Account & Start
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="login" className="space-y-4 mt-4">
+                <div>
+                  <Label htmlFor="loginNickname">Nickname</Label>
+                  <Input
+                    id="loginNickname"
+                    placeholder="Enter your nickname"
+                    value={loginNickname}
+                    onChange={(e) => {
+                      setLoginNickname(e.target.value);
+                      setLoginError('');
+                    }}
+                    className="bg-background border-border"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="loginPassword">Password</Label>
+                  <Input
+                    id="loginPassword"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={loginPassword}
+                    onChange={(e) => {
+                      setLoginPassword(e.target.value);
+                      setLoginError('');
+                    }}
+                    className="bg-background border-border"
+                  />
+                </div>
+
+                {loginError && (
+                  <p className="text-sm text-danger">{loginError}</p>
+                )}
+
+                <Button 
+                  onClick={handleLogin}
+                  disabled={!loginNickname || !loginPassword}
+                  className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                >
+                  Login & Continue
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="guest" className="space-y-4 mt-4">
+                <div className="text-center py-4">
+                  <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Continue as Guest</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Start learning immediately without creating an account. 
+                    Note: Your progress won't be saved permanently.
+                  </p>
+                  <Button 
+                    onClick={handleGuest}
+                    variant="outline"
+                    className="w-full hover:shadow-glow transition-all duration-300"
+                  >
+                    Continue as Guest
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 

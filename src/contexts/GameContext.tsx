@@ -5,12 +5,15 @@ export interface User {
   id: string;
   nickname: string;
   role: string;
+  password?: string; // For registered users
+  isGuest: boolean;
   xp: number;
   level: number;
   streakDays: number;
   completedModules: string[];
   badges: string[];
   lastActivity: Date;
+  hasCompletedAssessment: boolean;
 }
 
 export interface Challenge {
@@ -37,11 +40,14 @@ export interface GameState {
   currentModule: string | null;
   attempts: Attempt[];
   isAssessmentComplete: boolean;
+  registeredUsers: User[]; // Store registered users
 }
 
 // Actions
 type GameAction =
   | { type: 'SET_USER'; payload: User }
+  | { type: 'REGISTER_USER'; payload: User }
+  | { type: 'LOGIN_USER'; payload: { nickname: string; password: string } }
   | { type: 'ADD_XP'; payload: number }
   | { type: 'COMPLETE_CHALLENGE'; payload: Attempt }
   | { type: 'UNLOCK_BADGE'; payload: string }
@@ -55,6 +61,7 @@ const initialState: GameState = {
   currentModule: null,
   attempts: [],
   isAssessmentComplete: false,
+  registeredUsers: [],
 };
 
 // Reducer
@@ -63,18 +70,43 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_USER':
       return { ...state, user: action.payload };
     
+    case 'REGISTER_USER':
+      return { 
+        ...state, 
+        user: action.payload,
+        registeredUsers: [...state.registeredUsers, action.payload]
+      };
+    
+    case 'LOGIN_USER': {
+      const existingUser = state.registeredUsers.find(
+        u => u.nickname === action.payload.nickname && u.password === action.payload.password
+      );
+      if (existingUser) {
+        return { ...state, user: existingUser, isAssessmentComplete: existingUser.hasCompletedAssessment };
+      }
+      return state;
+    }
+    
     case 'ADD_XP': {
       if (!state.user) return state;
       const newXp = state.user.xp + action.payload;
       const newLevel = Math.floor(newXp / 200) + 1;
+      const updatedUser = {
+        ...state.user,
+        xp: newXp,
+        level: newLevel,
+        lastActivity: new Date(),
+      };
+      
+      // Update in registered users if not guest
+      const updatedRegisteredUsers = state.user.isGuest 
+        ? state.registeredUsers
+        : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
       return {
         ...state,
-        user: {
-          ...state.user,
-          xp: newXp,
-          level: newLevel,
-          lastActivity: new Date(),
-        },
+        user: updatedUser,
+        registeredUsers: updatedRegisteredUsers,
       };
     }
     
@@ -98,8 +130,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_MODULE':
       return { ...state, currentModule: action.payload };
     
-    case 'COMPLETE_ASSESSMENT':
-      return { ...state, isAssessmentComplete: true };
+    case 'COMPLETE_ASSESSMENT': {
+      if (!state.user) return state;
+      const updatedUser = { ...state.user, hasCompletedAssessment: true };
+      const updatedRegisteredUsers = state.user.isGuest 
+        ? state.registeredUsers
+        : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+        
+      return { 
+        ...state, 
+        isAssessmentComplete: true,
+        user: updatedUser,
+        registeredUsers: updatedRegisteredUsers,
+      };
+    }
     
     case 'RESET_GAME':
       return initialState;

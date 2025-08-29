@@ -22,107 +22,186 @@ const PrivacyModule = () => {
     {
       id: 'privacy-social-1',
       type: 'scenario',
-      title: 'Social Media Privacy Scenario',
-      scenario: 'Your friend tags you in a public post showing your student ID card while celebrating getting into university. The post is visible to everyone and shows your full name, student ID number, and university logo.',
-      question: 'What should you do?',
+      title: 'Social Media Oversharing Crisis',
+      scenario: 'Your friend tags you in a public Instagram post showing both of you celebrating at a restaurant. The post includes the location, shows your student ID card on the table (with your full name and student number visible), mentions that you\'re both going on spring break to Cancun next week, and includes hashtags with your university name. The post has already received 50 likes and several comments from strangers.',
+      question: 'What should be your immediate priority to protect your privacy and security?',
       options: [
         { 
           id: 'A', 
-          text: 'Leave it - it\'s just celebrating good news', 
-          feedback: 'Student ID numbers can be used for identity theft and account takeovers.' 
+          text: 'Leave it alone - it\'s just a fun post and nothing bad will happen', 
+          feedback: 'This exposes multiple privacy risks: identity theft via student ID, home security risks during travel, and location tracking.' 
         },
         { 
           id: 'B', 
-          text: 'Like the post and share it on your profile too', 
-          feedback: 'This would make the problem worse by spreading your personal information further.' 
+          text: 'Ask your friend to delete the entire post immediately', 
+          feedback: 'While removing the post would help, this doesn\'t address the information that may have already been captured or shared.' 
         },
         { 
           id: 'C', 
-          text: 'Ask your friend to remove the tag and repost without showing the ID', 
+          text: 'Untag yourself, ask friend to blur the ID card and remove travel details, then have a conversation about privacy boundaries', 
           correct: true,
-          feedback: 'Perfect! This protects your personal information while maintaining the celebration.' 
+          feedback: 'Excellent! This addresses immediate risks while educating your friend about privacy implications. Always act quickly to limit exposure of sensitive information.' 
         },
         { 
           id: 'D', 
-          text: 'Report the post to the social media platform', 
-          feedback: 'This is unnecessarily harsh for a friend\'s innocent mistake. Communication first is better.' 
+          text: 'Report the post to Instagram for privacy violations', 
+          feedback: 'Reporting won\'t be effective since your friend posted it consensually. Direct communication and removal is more appropriate.' 
         },
       ],
       tips: [
-        'Student IDs contain sensitive information that can be misused',
-        'Always check what personal details are visible in photos before posting',
-        'Friends may not realize the privacy implications - educate kindly'
+        'Student IDs contain information that can be used for identity verification on many websites',
+        'Broadcasting travel plans on social media alerts potential burglars that your home is empty',
+        'Location data from posts can be used to track your regular patterns and movements',
+        'Public posts can be seen by anyone, including people with malicious intent',
+        'Set clear privacy boundaries with friends about what you\'re comfortable sharing'
       ]
     },
     {
-      id: 'privacy-2fa',
+      id: 'privacy-2fa-advanced',
       type: 'knowledge',
-      title: '2FA Setup Priority',
-      scenario: 'You want to enable two-factor authentication (2FA) on your accounts but can only set it up on 5 accounts right now due to time constraints.',
-      question: 'Which accounts should you prioritize for 2FA? (Select the BEST answer)',
+      title: 'Advanced Two-Factor Authentication Strategy',
+      scenario: 'You\'re setting up 2FA for your most critical accounts. You have the choice between SMS codes, authenticator apps (like Google Authenticator), hardware security keys (like YubiKey), and backup codes. Your threat model includes protection against SIM swapping attacks, account takeovers, and state-level adversaries.',
+      question: 'What is the most secure 2FA setup strategy for maximum protection?',
       options: [
         { 
           id: 'A', 
-          text: 'Social media accounts because you use them most often',
-          feedback: 'While important, other accounts have higher security priority.' 
+          text: 'Use SMS for everything because it\'s convenient and works on any phone',
+          feedback: 'SMS is vulnerable to SIM swapping attacks where attackers transfer your phone number to their device. This is the least secure option.' 
         },
         { 
           id: 'B', 
-          text: 'Email, banking, work/school, password manager, and cloud storage',
+          text: 'Use hardware security keys as primary method, authenticator app as backup, avoid SMS entirely',
           correct: true,
-          feedback: 'Excellent! These are your most critical accounts that, if compromised, could lead to access to other accounts.' 
+          feedback: 'Perfect! Hardware keys provide the strongest protection against phishing and account takeovers. Authenticator apps are excellent backups, and avoiding SMS eliminates SIM swapping risks.' 
         },
         { 
           id: 'C', 
-          text: 'Gaming and entertainment accounts',
-          feedback: 'These are less critical for your overall security.' 
+          text: 'Use only authenticator apps for all accounts',
+          feedback: 'Good choice, but having only one method creates risk if you lose your device. Always have secure backup methods.' 
         },
         { 
           id: 'D', 
-          text: 'Shopping websites where you have payment info stored',
-          feedback: 'Important, but email and banking should come first as they\'re often used for account recovery.' 
+          text: 'Use a combination of SMS and authenticator apps for redundancy',
+          feedback: 'The SMS component weakens your overall security by creating a SIM swapping vulnerability, even if you have stronger methods available.' 
         },
       ],
       tips: [
-        'Prioritize accounts that control access to other accounts (email, password manager)',
-        'Financial accounts should always have 2FA enabled',
-        'Work/school accounts often contain sensitive information'
+        'Hardware security keys (FIDO2/WebAuthn) provide the strongest protection against phishing',
+        'SIM swapping attacks can bypass SMS-based 2FA by transferring your number to attacker\'s phone',
+        'Always have multiple backup methods in case you lose access to your primary 2FA device',
+        'Authenticator apps (TOTP) are much more secure than SMS but less secure than hardware keys',
+        'Store backup recovery codes in a secure location separate from your devices'
       ]
     },
     {
-      id: 'privacy-sharing',
+      id: 'privacy-workplace',
       type: 'scenario',
-      title: 'Information Sharing Dilemma',
-      scenario: 'You\'re applying for a part-time job at a local café. The manager asks you to fill out an application form that requests: your full name, address, phone number, email, Social Security Number, bank account details for direct deposit, mother\'s maiden name, and your social media passwords "to check your online presence."',
-      question: 'Which information should you be concerned about providing?',
+      title: 'Workplace Privacy Violation',
+      scenario: 'You work at a marketing company and discover that your manager has been monitoring employees\' personal social media accounts, reading private messages on company computers, and keeping detailed files on employees\' personal relationships and political opinions. This information is being used to make promotion decisions. You also notice that the company WiFi is intercepting HTTPS traffic and the IT department has installed monitoring software on all devices.',
+      question: 'What is the most appropriate and effective response to protect yourself and address these privacy violations?',
       options: [
         { 
           id: 'A', 
-          text: 'Only provide your social media passwords - everything else is normal',
-          feedback: 'Never provide social media passwords! But other items on this list are also problematic.' 
+          text: 'Confront your manager directly about the surveillance and demand they stop',
+          feedback: 'Direct confrontation could backfire and put your job at risk without resolving the systemic privacy issues affecting all employees.' 
         },
         { 
           id: 'B', 
-          text: 'Provide everything except social media passwords',
-          feedback: 'Several other items are inappropriate for a job application and could enable identity theft.' 
+          text: 'Document everything, consult with HR/legal about policy violations, use personal devices on cellular data for private communications',
+          correct: true,
+          feedback: 'Excellent approach! Documentation protects you legally, proper channels address the violations, and using personal devices on cellular prevents further monitoring of your private communications.' 
         },
         { 
           id: 'C', 
-          text: 'Only provide: name, phone, email, and address. Question the other requests.',
-          correct: true,
-          feedback: 'Correct! SSN, bank details, and passwords should only be provided after hiring, and maiden names aren\'t needed for employment.' 
+          text: 'Start looking for a new job immediately and don\'t address the issue',
+          feedback: 'While leaving might protect you, it doesn\'t address the privacy violations affecting other employees or hold the company accountable for illegal practices.' 
         },
         { 
           id: 'D', 
-          text: 'Provide everything - they must need it for the job',
-          feedback: 'This could lead to identity theft. Legitimate employers only request necessary information.' 
+          text: 'Report the company to authorities immediately without internal escalation',
+          feedback: 'While reporting may be necessary, many organizations prefer to address issues internally first. Documentation and internal reporting should typically precede external complaints.' 
         },
       ],
       tips: [
-        'Never give social media passwords to employers',
-        'SSN and bank details should only be provided after you\'re hired',
-        'Question requests for unnecessary personal information',
-        'Legitimate employers follow privacy best practices'
+        'Workplace privacy laws vary by location, but monitoring personal accounts often violates privacy rights',
+        'Document all evidence of privacy violations with dates, times, and specific incidents',
+        'Never use company networks or devices for personal communications if you suspect monitoring',
+        'HR departments should have policies against using personal information for employment decisions',
+        'Legal consultation may be necessary for serious workplace privacy violations'
+      ]
+    },
+    {
+      id: 'privacy-data-breach',
+      type: 'scenario',
+      title: 'Personal Data Breach Response',
+      scenario: 'You receive a notification that a major retailer where you shopped online has suffered a data breach. The exposed information includes your full name, email address, phone number, home address, purchase history, partial credit card numbers, and encrypted passwords. The breach affected 50 million customers and occurred 6 months ago but was only recently discovered. The company is offering 2 years of free credit monitoring.',
+      question: 'What is the most comprehensive response to protect yourself from the long-term impacts of this breach?',
+      options: [
+        { 
+          id: 'A', 
+          text: 'Accept the free credit monitoring and change your password on that retailer\'s website',
+          feedback: 'This addresses only immediate concerns. Data breaches require more comprehensive response to protect against long-term identity theft and fraud.' 
+        },
+        { 
+          id: 'B', 
+          text: 'Ignore it since the passwords were encrypted and your credit card wasn\'t fully exposed',
+          feedback: 'Encrypted passwords can still be cracked, and partial credit card data combined with other information can still be used for fraud. Never ignore breach notifications.' 
+        },
+        { 
+          id: 'C', 
+          text: 'Change passwords on all accounts, monitor credit reports, consider credit freeze, update security questions, watch for social engineering attempts',
+          correct: true,
+          feedback: 'Comprehensive approach! Breached data can be used across multiple accounts and for social engineering. This response addresses both immediate and long-term risks.' 
+        },
+        { 
+          id: 'D', 
+          text: 'Close all your credit cards and bank accounts immediately',
+          feedback: 'This is an overreaction that could disrupt your financial life unnecessarily. Monitoring and strategic security measures are more appropriate than closing all accounts.' 
+        },
+      ],
+      tips: [
+        'Data from breaches is often sold on dark web markets and used months or years later',
+        'Change passwords on any accounts that might use the same password as the breached site',
+        'Credit freezes prevent new accounts from being opened in your name',
+        'Breached personal information is often used for convincing social engineering attacks',
+        'Monitor all financial accounts and credit reports for unusual activity for at least 2 years'
+      ]
+    },
+    {
+      id: 'privacy-smart-devices',
+      type: 'scenario',
+      title: 'Smart Home Privacy Dilemma',
+      scenario: 'You\'re moving into a new apartment and considering setting up smart home devices. You\'re looking at smart speakers (Alexa, Google Home), smart TVs with built-in cameras and microphones, smart thermostats, connected security cameras, and smart doorbells with facial recognition. You value convenience but are concerned about privacy. You work from home with confidential client information and often have sensitive phone calls.',
+      question: 'What\'s the best approach to balance smart home convenience with privacy protection for your professional needs?',
+      options: [
+        { 
+          id: 'A', 
+          text: 'Install all devices but keep them disconnected from the internet',
+          feedback: 'This defeats the purpose of smart devices, which rely on internet connectivity for their main features. You\'d lose most of the convenience benefits.' 
+        },
+        { 
+          id: 'B', 
+          text: 'Avoid all smart devices to maintain complete privacy',
+          feedback: 'While this ensures privacy, it may be unnecessarily restrictive. There are ways to use smart devices more privately with proper precautions.' 
+        },
+        { 
+          id: 'C', 
+          text: 'Use smart devices with cameras/microphones only in non-work areas, enable privacy modes, create separate network for IoT devices, review privacy settings regularly',
+          correct: true,
+          feedback: 'Excellent strategy! This approach allows you to enjoy smart home benefits while protecting sensitive work areas and implementing multiple layers of privacy protection.' 
+        },
+        { 
+          id: 'D', 
+          text: 'Install everything but use voice activation words that are hard for others to guess',
+          feedback: 'Voice activation security is not the main privacy concern. These devices are always listening for wake words and may record more than intended.' 
+        },
+      ],
+      tips: [
+        'Smart devices with microphones and cameras pose risks in areas where you handle confidential information',
+        'Create separate IoT networks to isolate smart devices from computers containing sensitive data',
+        'Regularly review and update privacy settings as manufacturers often change policies',
+        'Physical privacy switches or covers provide additional protection for cameras and microphones',
+        'Consider the privacy policies of device manufacturers and how they use your data'
       ]
     },
   ];
