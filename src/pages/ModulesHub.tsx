@@ -57,7 +57,6 @@ const ModulesHub = () => {
       difficulty: 'Beginner',
       estimatedTime: '10 min',
       topics: ['Auto-updates', 'Security patches', 'End-of-life software'],
-      comingSoon: true,
     },
     {
       id: 'backups',
@@ -65,12 +64,11 @@ const ModulesHub = () => {
       icon: Database,
       description: 'Protect against data loss with effective backup strategies',
       progress: 0,
-      challenges: 7,
+      challenges: 5,
       xpReward: 140,
       difficulty: 'Intermediate',
       estimatedTime: '18 min',
       topics: ['3-2-1 backup rule', 'Ransomware recovery', 'Cloud backups'],
-      comingSoon: true,
     },
     {
       id: 'team',
@@ -83,7 +81,6 @@ const ModulesHub = () => {
       difficulty: 'Advanced',
       estimatedTime: '25 min',
       topics: ['Incident response', 'Security policies', 'Team training'],
-      comingSoon: true,
     },
   ];
 
@@ -114,10 +111,8 @@ const ModulesHub = () => {
           {modules.map((module) => (
             <Card 
               key={module.id} 
-              className={`bg-gradient-card border-border hover:shadow-glow transition-all duration-300 ${
-                module.comingSoon ? 'opacity-75' : 'cursor-pointer'
-              }`}
-              onClick={() => !module.comingSoon && navigate(`/modules/${module.id}`)}
+              className={`bg-gradient-card border-border hover:shadow-glow transition-all duration-300 cursor-pointer`}
+              onClick={() => navigate(`/modules/${module.id}`)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -136,11 +131,6 @@ const ModulesHub = () => {
                       </div>
                     </div>
                   </div>
-                  {module.comingSoon && (
-                    <Badge className="bg-muted text-muted-foreground">
-                      Coming Soon
-                    </Badge>
-                  )}
                 </div>
                 <CardDescription className="mt-2">{module.description}</CardDescription>
               </CardHeader>
@@ -182,14 +172,8 @@ const ModulesHub = () => {
                 {/* Action Button */}
                 <Button 
                   className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
-                  disabled={module.comingSoon}
                 >
-                  {module.comingSoon 
-                    ? 'Coming Soon' 
-                    : module.progress > 0 
-                      ? 'Continue Module' 
-                      : 'Start Module'
-                  }
+                  {module.progress > 0 ? 'Continue Module' : 'Start Module'}
                 </Button>
               </CardContent>
             </Card>

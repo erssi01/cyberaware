@@ -1,11 +1,17 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, Home, BookOpen, Trophy, Target, User, Settings } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Shield, Home, BookOpen, Trophy, Target, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/contexts/GameContext';
 
 const Navigation = () => {
   const location = useLocation();
-  const { state } = useGame();
+  const navigate = useNavigate();
+  const { state, dispatch } = useGame();
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    navigate('/');
+  };
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -56,11 +62,16 @@ const Navigation = () => {
                   Level {state.user.level} • {state.user.xp} XP
                 </p>
               </div>
-              <Link to="/profile">
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <Link to="/profile">
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
                 </Button>
-              </Link>
+              </div>
             </div>
           )}
         </div>

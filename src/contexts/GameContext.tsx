@@ -53,7 +53,8 @@ type GameAction =
   | { type: 'UNLOCK_BADGE'; payload: string }
   | { type: 'SET_MODULE'; payload: string }
   | { type: 'COMPLETE_ASSESSMENT' }
-  | { type: 'RESET_GAME' };
+  | { type: 'RESET_GAME' }
+  | { type: 'LOGOUT' };
 
 // Initial state
 const initialState: GameState = {
@@ -146,6 +147,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     
     case 'RESET_GAME':
+      return initialState;
+    
+    case 'LOGOUT':
       return initialState;
     
     default:
