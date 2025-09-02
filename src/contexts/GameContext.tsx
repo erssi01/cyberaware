@@ -56,13 +56,32 @@ type GameAction =
   | { type: 'RESET_GAME' }
   | { type: 'LOGOUT' };
 
+// Load registered users from localStorage
+const loadRegisteredUsers = (): User[] => {
+  try {
+    const stored = localStorage.getItem('cyberaware_registered_users');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Save registered users to localStorage
+const saveRegisteredUsers = (users: User[]) => {
+  try {
+    localStorage.setItem('cyberaware_registered_users', JSON.stringify(users));
+  } catch {
+    // Handle localStorage errors silently
+  }
+};
+
 // Initial state
 const initialState: GameState = {
   user: null,
   currentModule: null,
   attempts: [],
   isAssessmentComplete: false,
-  registeredUsers: [],
+  registeredUsers: loadRegisteredUsers(),
 };
 
 // Reducer
@@ -71,12 +90,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_USER':
       return { ...state, user: action.payload };
     
-    case 'REGISTER_USER':
+    case 'REGISTER_USER': {
+      const updatedRegisteredUsers = [...state.registeredUsers, action.payload];
+      saveRegisteredUsers(updatedRegisteredUsers);
       return { 
         ...state, 
         user: action.payload,
-        registeredUsers: [...state.registeredUsers, action.payload]
+        registeredUsers: updatedRegisteredUsers
       };
+    }
     
     case 'LOGIN_USER': {
       const existingUser = state.registeredUsers.find(
@@ -103,6 +125,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedRegisteredUsers = state.user.isGuest 
         ? state.registeredUsers
         : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
+      // Save to localStorage if user is registered
+      if (!state.user.isGuest) {
+        saveRegisteredUsers(updatedRegisteredUsers);
+      }
       
       return {
         ...state,
@@ -137,6 +164,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedRegisteredUsers = state.user.isGuest 
         ? state.registeredUsers
         : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
+      // Save to localStorage if user is registered
+      if (!state.user.isGuest) {
+        saveRegisteredUsers(updatedRegisteredUsers);
+      }
         
       return { 
         ...state, 
@@ -150,7 +182,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return initialState;
     
     case 'LOGOUT':
-      return initialState;
+      return { 
+        ...initialState, 
+        registeredUsers: state.registeredUsers // Preserve registered users on logout
+      };
     
     default:
       return state;
