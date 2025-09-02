@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertTriangle, Shield } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Shield, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -212,6 +212,18 @@ const Assessment = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/welcome')}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Welcome
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <Shield className="h-12 w-12 text-accent mx-auto mb-4" />
