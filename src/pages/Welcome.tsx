@@ -43,15 +43,20 @@ const Welcome = () => {
 
   const handleLogin = () => {
     if (loginNickname && loginPassword) {
+      console.log('Attempting login for:', loginNickname);
+      console.log('Available users:', state.registeredUsers.map(u => ({ nickname: u.nickname, hasCompleted: u.hasCompletedAssessment })));
+      
       const existingUser = state.registeredUsers.find(
         u => u.nickname === loginNickname && u.password === loginPassword
       );
       
       if (existingUser) {
+        console.log('Found user:', existingUser.nickname, 'hasCompleted:', existingUser.hasCompletedAssessment);
         dispatch({ type: 'LOGIN_USER', payload: { nickname: loginNickname, password: loginPassword } });
         // If user has completed assessment, go to dashboard, otherwise assessment
         navigate(existingUser.hasCompletedAssessment ? '/dashboard' : '/assessment');
       } else {
+        console.log('No matching user found');
         setLoginError('Invalid credentials. Please check your nickname and password.');
       }
     }

@@ -60,7 +60,15 @@ type GameAction =
 const loadRegisteredUsers = (): User[] => {
   try {
     const stored = localStorage.getItem('cyberaware_registered_users');
-    return stored ? JSON.parse(stored) : [];
+    if (stored) {
+      const users = JSON.parse(stored);
+      // Convert lastActivity strings back to Date objects
+      return users.map((user: any) => ({
+        ...user,
+        lastActivity: new Date(user.lastActivity)
+      }));
+    }
+    return [];
   } catch {
     return [];
   }
@@ -183,8 +191,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'LOGOUT':
       return { 
-        ...initialState, 
-        registeredUsers: state.registeredUsers // Preserve registered users on logout
+        ...state,
+        user: null,
+        currentModule: null,
+        attempts: [],
+        isAssessmentComplete: false,
+        // Preserve registered users on logout  
+        registeredUsers: state.registeredUsers
       };
     
     default:
