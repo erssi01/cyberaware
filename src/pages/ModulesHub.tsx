@@ -71,7 +71,7 @@ const ModulesHub = () => {
       topics: ['3-2-1 backup rule', 'Ransomware recovery', 'Cloud backups'],
     },
     {
-      id: 'team',
+      id: 'team-security',
       name: 'Team Security',
       icon: Users,
       description: 'Learn collaborative security practices for teams',
