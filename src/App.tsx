@@ -19,6 +19,7 @@ import Badges from "./pages/Badges";
 import Quests from "./pages/Quests";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import Gamification from "./pages/Gamification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
         <Route path="/modules/team-security" element={<TeamSecurityModule />} />
             <Route path="/badges" element={<Badges />} />
             <Route path="/quests" element={<Quests />} />
+            <Route path="/gamification" element={<Gamification />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />

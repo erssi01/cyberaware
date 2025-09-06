@@ -34,6 +34,28 @@ const Welcome = () => {
         badges: [],
         lastActivity: new Date(),
         hasCompletedAssessment: false,
+        // Enhanced gamification fields
+        dailyLoginStreak: 0,
+        lastLoginDate: new Date().toDateString(),
+        weeklyXP: 0,
+        monthlyXP: 0,
+        totalChallengesCompleted: 0,
+        perfectScoreCount: 0,
+        fastestCompletionTime: 0,
+        achievements: [],
+        preferences: {
+          difficulty: 'medium' as const,
+          reminders: true,
+          soundEnabled: true,
+          animationsEnabled: true,
+        },
+        stats: {
+          averageScore: 0,
+          strongestModule: '',
+          weakestModule: '',
+          studyTimeMinutes: 0,
+          favoriteTimeOfDay: '',
+        },
       };
       
       dispatch({ type: 'REGISTER_USER', payload: newUser });
@@ -75,6 +97,28 @@ const Welcome = () => {
       badges: [],
       lastActivity: new Date(),
       hasCompletedAssessment: false,
+      // Enhanced gamification fields
+      dailyLoginStreak: 0,
+      lastLoginDate: new Date().toDateString(),
+      weeklyXP: 0,
+      monthlyXP: 0,
+      totalChallengesCompleted: 0,
+      perfectScoreCount: 0,
+      fastestCompletionTime: 0,
+      achievements: [],
+      preferences: {
+        difficulty: 'medium' as const,
+        reminders: true,
+        soundEnabled: true,
+        animationsEnabled: true,
+      },
+      stats: {
+        averageScore: 0,
+        strongestModule: '',
+        weakestModule: '',
+        studyTimeMinutes: 0,
+        favoriteTimeOfDay: '',
+      },
     };
     
     dispatch({ type: 'SET_USER', payload: guestUser });

@@ -14,6 +14,41 @@ export interface User {
   badges: string[];
   lastActivity: Date;
   hasCompletedAssessment: boolean;
+  // Enhanced gamification fields
+  dailyLoginStreak: number;
+  lastLoginDate: string;
+  weeklyXP: number;
+  monthlyXP: number;
+  totalChallengesCompleted: number;
+  perfectScoreCount: number;
+  fastestCompletionTime: number;
+  achievements: Achievement[];
+  preferences: UserPreferences;
+  stats: UserStats;
+}
+
+export interface Achievement {
+  id: string;
+  type: 'xp' | 'streak' | 'badge' | 'level' | 'challenge' | 'speed';
+  title: string;
+  description: string;
+  value?: number;
+  timestamp: Date;
+}
+
+export interface UserPreferences {
+  difficulty: 'easy' | 'medium' | 'hard';
+  reminders: boolean;
+  soundEnabled: boolean;
+  animationsEnabled: boolean;
+}
+
+export interface UserStats {
+  averageScore: number;
+  strongestModule: string;
+  weakestModule: string;
+  studyTimeMinutes: number;
+  favoriteTimeOfDay: string;
 }
 
 export interface Challenge {
@@ -41,6 +76,39 @@ export interface GameState {
   attempts: Attempt[];
   isAssessmentComplete: boolean;
   registeredUsers: User[]; // Store registered users
+  // Enhanced gamification state
+  dailyQuests: Quest[];
+  weeklyQuests: Quest[];
+  leaderboard: LeaderboardEntry[];
+  globalStats: GlobalStats;
+}
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  type: 'daily' | 'weekly' | 'special';
+  progress: number;
+  maxProgress: number;
+  xpReward: number;
+  isCompleted: boolean;
+  expiresAt: Date;
+}
+
+export interface LeaderboardEntry {
+  userId: string;
+  nickname: string;
+  xp: number;
+  level: number;
+  badges: number;
+  streakDays: number;
+}
+
+export interface GlobalStats {
+  totalUsers: number;
+  totalXPEarned: number;
+  totalChallengesCompleted: number;
+  averageLevel: number;
 }
 
 // Actions
@@ -54,7 +122,12 @@ type GameAction =
   | { type: 'SET_MODULE'; payload: string }
   | { type: 'COMPLETE_ASSESSMENT' }
   | { type: 'RESET_GAME' }
-  | { type: 'LOGOUT' };
+  | { type: 'LOGOUT' }
+  | { type: 'UPDATE_DAILY_STREAK' }
+  | { type: 'COMPLETE_QUEST'; payload: string }
+  | { type: 'ADD_ACHIEVEMENT'; payload: Achievement }
+  | { type: 'UPDATE_PREFERENCES'; payload: Partial<UserPreferences> }
+  | { type: 'UPDATE_LEADERBOARD'; payload: LeaderboardEntry[] };
 
 // Load registered users from localStorage
 const loadRegisteredUsers = (): User[] => {
@@ -90,6 +163,15 @@ const initialState: GameState = {
   attempts: [],
   isAssessmentComplete: false,
   registeredUsers: loadRegisteredUsers(),
+  dailyQuests: [],
+  weeklyQuests: [],
+  leaderboard: [],
+  globalStats: {
+    totalUsers: 0,
+    totalXPEarned: 0,
+    totalChallengesCompleted: 0,
+    averageLevel: 1,
+  },
 };
 
 // Reducer
@@ -188,6 +270,104 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'RESET_GAME':
       return initialState;
+    
+    case 'UPDATE_DAILY_STREAK': {
+      if (!state.user) return state;
+      const today = new Date().toDateString();
+      const lastLogin = new Date(state.user.lastLoginDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      let newStreak = state.user.dailyLoginStreak;
+      
+      // If last login was yesterday, increment streak
+      if (lastLogin.toDateString() === yesterday.toDateString()) {
+        newStreak += 1;
+      } else if (lastLogin.toDateString() !== today) {
+        // If more than a day gap, reset streak to 1
+        newStreak = 1;
+      }
+      
+      const updatedUser = {
+        ...state.user,
+        dailyLoginStreak: newStreak,
+        lastLoginDate: today,
+        lastActivity: new Date(),
+      };
+      
+      const updatedRegisteredUsers = state.user.isGuest 
+        ? state.registeredUsers
+        : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
+      if (!state.user.isGuest) {
+        saveRegisteredUsers(updatedRegisteredUsers);
+      }
+      
+      return {
+        ...state,
+        user: updatedUser,
+        registeredUsers: updatedRegisteredUsers,
+      };
+    }
+    
+    case 'COMPLETE_QUEST': {
+      const updatedDailyQuests = state.dailyQuests.map(quest =>
+        quest.id === action.payload ? { ...quest, isCompleted: true } : quest
+      );
+      const updatedWeeklyQuests = state.weeklyQuests.map(quest =>
+        quest.id === action.payload ? { ...quest, isCompleted: true } : quest
+      );
+      
+      return {
+        ...state,
+        dailyQuests: updatedDailyQuests,
+        weeklyQuests: updatedWeeklyQuests,
+      };
+    }
+    
+    case 'ADD_ACHIEVEMENT': {
+      if (!state.user) return state;
+      const updatedUser = {
+        ...state.user,
+        achievements: [...state.user.achievements, action.payload],
+      };
+      
+      const updatedRegisteredUsers = state.user.isGuest 
+        ? state.registeredUsers
+        : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
+      if (!state.user.isGuest) {
+        saveRegisteredUsers(updatedRegisteredUsers);
+      }
+      
+      return {
+        ...state,
+        user: updatedUser,
+        registeredUsers: updatedRegisteredUsers,
+      };
+    }
+    
+    case 'UPDATE_PREFERENCES': {
+      if (!state.user) return state;
+      const updatedUser = {
+        ...state.user,
+        preferences: { ...state.user.preferences, ...action.payload },
+      };
+      
+      const updatedRegisteredUsers = state.user.isGuest 
+        ? state.registeredUsers
+        : state.registeredUsers.map(u => u.id === state.user!.id ? updatedUser : u);
+      
+      if (!state.user.isGuest) {
+        saveRegisteredUsers(updatedRegisteredUsers);
+      }
+      
+      return {
+        ...state,
+        user: updatedUser,
+        registeredUsers: updatedRegisteredUsers,
+      };
+    }
     
     case 'LOGOUT':
       return { 

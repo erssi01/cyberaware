@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Home, BookOpen, Trophy, Target, User, Settings, LogOut } from 'lucide-react';
+import { Shield, Home, BookOpen, Trophy, Target, User, Settings, LogOut, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/contexts/GameContext';
 
@@ -18,6 +18,7 @@ const Navigation = () => {
     { path: '/modules', label: 'Modules', icon: BookOpen },
     { path: '/badges', label: 'Badges', icon: Trophy },
     { path: '/quests', label: 'Quests', icon: Target },
+    { path: '/gamification', label: 'Games', icon: Gamepad2 },
     { path: '/profile', label: 'Profile', icon: User },
   ];
 
@@ -79,7 +80,7 @@ const Navigation = () => {
         {/* Mobile Navigation */}
         <div className="md:hidden pb-4">
           <div className="flex justify-between">
-            {navItems.slice(0, 4).map((item) => (
+            {navItems.slice(0, 5).map((item) => (
               <Link key={item.path} to={item.path}>
                 <Button 
                   variant={isActive(item.path) ? "default" : "ghost"}
