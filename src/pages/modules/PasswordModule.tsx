@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Shield, ArrowLeft, Check, X, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, ArrowLeft, Check, X, Zap, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,8 @@ const PasswordModule = () => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [attempts, setAttempts] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const challenges = [
     {
@@ -92,30 +94,139 @@ const PasswordModule = () => {
   const checkPasswordStrength = (password: string) => {
     let score = 0;
     const feedback = [];
+    const checks = [];
 
-    if (password.length >= 12) score += 1;
-    else feedback.push('Use at least 12 characters');
+    // Length check
+    if (password.length >= 16) {
+      score += 2;
+      checks.push({ name: 'Length (16+ chars)', passed: true, icon: CheckCircle });
+    } else if (password.length >= 12) {
+      score += 1;
+      checks.push({ name: 'Length (12+ chars)', passed: true, icon: CheckCircle });
+      feedback.push('Consider 16+ characters for maximum security');
+    } else {
+      checks.push({ name: 'Length (12+ chars)', passed: false, icon: AlertCircle });
+      feedback.push('Use at least 12 characters');
+    }
 
-    if (/[a-z]/.test(password)) score += 1;
-    else feedback.push('Include lowercase letters');
+    // Character type checks
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-    if (/[A-Z]/.test(password)) score += 1;
-    else feedback.push('Include uppercase letters');
+    if (hasLower) {
+      score += 1;
+      checks.push({ name: 'Lowercase letters', passed: true, icon: CheckCircle });
+    } else {
+      checks.push({ name: 'Lowercase letters', passed: false, icon: AlertCircle });
+      feedback.push('Include lowercase letters');
+    }
 
-    if (/\d/.test(password)) score += 1;
-    else feedback.push('Include numbers');
+    if (hasUpper) {
+      score += 1;
+      checks.push({ name: 'Uppercase letters', passed: true, icon: CheckCircle });
+    } else {
+      checks.push({ name: 'Uppercase letters', passed: false, icon: AlertCircle });
+      feedback.push('Include uppercase letters');
+    }
 
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
-    else feedback.push('Include special characters');
+    if (hasNumber) {
+      score += 1;
+      checks.push({ name: 'Numbers', passed: true, icon: CheckCircle });
+    } else {
+      checks.push({ name: 'Numbers', passed: false, icon: AlertCircle });
+      feedback.push('Include numbers');
+    }
 
-    // Check for common patterns
-    if (/password|123|qwerty|admin/i.test(password)) {
-      score -= 1;
+    if (hasSymbol) {
+      score += 1;
+      checks.push({ name: 'Special characters', passed: true, icon: CheckCircle });
+    } else {
+      checks.push({ name: 'Special characters', passed: false, icon: AlertCircle });
+      feedback.push('Include special characters (!@#$%^&*)');
+    }
+
+    // Pattern checks
+    const hasCommonPatterns = /password|123|qwerty|admin|letmein|welcome/i.test(password);
+    if (!hasCommonPatterns && password.length > 0) {
+      score += 1;
+      checks.push({ name: 'No common patterns', passed: true, icon: CheckCircle });
+    } else if (password.length > 0) {
+      score -= 2;
+      checks.push({ name: 'No common patterns', passed: false, icon: AlertCircle });
       feedback.push('Avoid common words and patterns');
     }
 
-    return { score: Math.max(0, score), feedback };
+    // Entropy bonus
+    const uniqueChars = new Set(password).size;
+    if (uniqueChars >= password.length * 0.7 && password.length > 8) {
+      score += 1;
+      checks.push({ name: 'Good character diversity', passed: true, icon: CheckCircle });
+    } else if (password.length > 8) {
+      checks.push({ name: 'Good character diversity', passed: false, icon: AlertCircle });
+      feedback.push('Use more diverse characters');
+    }
+
+    const strengthLevel = score >= 6 ? 'Excellent' : score >= 5 ? 'Strong' : score >= 4 ? 'Good' : score >= 2 ? 'Fair' : 'Weak';
+    const strengthColor = score >= 6 ? 'text-emerald-400' : score >= 5 ? 'text-green-400' : score >= 4 ? 'text-yellow-400' : score >= 2 ? 'text-orange-400' : 'text-red-400';
+
+    return { 
+      score: Math.max(0, score), 
+      feedback, 
+      checks,
+      strengthLevel,
+      strengthColor,
+      estimatedCrackTime: calculateCrackTime(password)
+    };
   };
+
+  const calculateCrackTime = (password: string) => {
+    if (password.length === 0) return '';
+    
+    let charset = 0;
+    if (/[a-z]/.test(password)) charset += 26;
+    if (/[A-Z]/.test(password)) charset += 26;
+    if (/\d/.test(password)) charset += 10;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) charset += 32;
+    
+    const combinations = Math.pow(charset, password.length);
+    const attemptsPerSecond = 1000000000; // 1 billion attempts/sec
+    const seconds = combinations / (2 * attemptsPerSecond);
+    
+    if (seconds < 60) return 'Less than a minute';
+    if (seconds < 3600) return `${Math.round(seconds / 60)} minutes`;
+    if (seconds < 86400) return `${Math.round(seconds / 3600)} hours`;
+    if (seconds < 31536000) return `${Math.round(seconds / 86400)} days`;
+    if (seconds < 31536000000) return `${Math.round(seconds / 31536000)} years`;
+    return 'Centuries';
+  };
+
+  // Real-time feedback with debouncing
+  const handlePasswordChange = (value: string) => {
+    setUserInput(value);
+    
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      if (challenge.type === 'builder' && value.length > 0) {
+        const strength = checkPasswordStrength(value);
+        // Provide gentle real-time feedback without being intrusive
+      }
+    }, 500);
+    
+    setTypingTimeout(timeout);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
 
   const handleSubmit = () => {
     setAttempts(prev => prev + 1);
@@ -219,42 +330,96 @@ const PasswordModule = () => {
 
             {/* Input Area */}
             {challenge.type === 'builder' ? (
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Enter your improved password..."
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  className="bg-background border-border text-lg font-mono"
-                />
+              <div className="space-y-4">
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your improved password..."
+                    value={userInput}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className="bg-background border-border text-lg font-mono pr-12 transition-all duration-200 focus:ring-2 focus:ring-accent/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
                 {userInput && (
-                  <div className="mt-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium">Password Strength:</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((level) => {
-                          const strength = checkPasswordStrength(userInput);
+                  <div className="space-y-4 animate-fade-in">
+                    {/* Strength Meter */}
+                    <div className="p-4 bg-muted/30 rounded-lg border border-muted backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium">Password Strength</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-semibold ${checkPasswordStrength(userInput).strengthColor}`}>
+                            {checkPasswordStrength(userInput).strengthLevel}
+                          </span>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5, 6].map((level) => {
+                              const strength = checkPasswordStrength(userInput);
+                              return (
+                                <div
+                                  key={level}
+                                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                    strength.score >= level
+                                      ? strength.score >= 6
+                                        ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]'
+                                        : strength.score >= 5
+                                        ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.4)]'
+                                        : strength.score >= 4
+                                        ? 'bg-yellow-400 shadow-[0_0_4px_rgba(250,204,21,0.4)]'
+                                        : strength.score >= 2
+                                        ? 'bg-orange-400'
+                                        : 'bg-red-400'
+                                      : 'bg-muted border border-muted-foreground/20'
+                                  }`}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="w-full bg-muted rounded-full h-2 mb-3 overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-500 ease-out ${
+                            checkPasswordStrength(userInput).score >= 6 ? 'bg-gradient-to-r from-emerald-400 to-green-400' :
+                            checkPasswordStrength(userInput).score >= 5 ? 'bg-gradient-to-r from-green-400 to-yellow-400' :
+                            checkPasswordStrength(userInput).score >= 4 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' :
+                            checkPasswordStrength(userInput).score >= 2 ? 'bg-gradient-to-r from-orange-400 to-red-400' :
+                            'bg-red-400'
+                          }`}
+                          style={{ width: `${Math.min(100, (checkPasswordStrength(userInput).score / 6) * 100)}%` }}
+                        />
+                      </div>
+
+                      {/* Crack Time Estimate */}
+                      <div className="text-xs text-muted-foreground mb-3">
+                        <span className="font-medium">Estimated crack time: </span>
+                        <span className={checkPasswordStrength(userInput).strengthColor}>
+                          {checkPasswordStrength(userInput).estimatedCrackTime}
+                        </span>
+                      </div>
+
+                      {/* Security Checks */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {checkPasswordStrength(userInput).checks.map((check, index) => {
+                          const Icon = check.icon;
                           return (
-                            <div
-                              key={level}
-                              className={`w-6 h-2 rounded ${
-                                strength.score >= level
-                                  ? strength.score >= 4
-                                    ? 'bg-success'
-                                    : strength.score >= 3
-                                    ? 'bg-warning'
-                                    : 'bg-danger'
-                                  : 'bg-muted'
-                              }`}
-                            />
+                            <div key={index} className={`flex items-center gap-2 text-xs transition-all duration-200 ${
+                              check.passed ? 'text-green-400' : 'text-muted-foreground'
+                            }`}>
+                              <Icon className={`h-3 w-3 ${check.passed ? 'text-green-400' : 'text-muted-foreground'}`} />
+                              <span>{check.name}</span>
+                            </div>
                           );
                         })}
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {checkPasswordStrength(userInput).score >= 4 ? 'Strong' : 
-                         checkPasswordStrength(userInput).score >= 3 ? 'Good' : 
-                         checkPasswordStrength(userInput).score >= 2 ? 'Fair' : 'Weak'}
-                      </span>
                     </div>
                   </div>
                 )}
@@ -280,16 +445,21 @@ const PasswordModule = () => {
 
             {/* Hints */}
             {challenge.type === 'builder' && challenge.hints && (
-              <div className="p-4 bg-accent/10 rounded-lg">
-                <h4 className="font-medium mb-2 text-accent">💡 Hints:</h4>
-                <ul className="text-sm space-y-1">
+              <div className="p-4 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/20 backdrop-blur-sm">
+                <h4 className="font-medium mb-3 text-accent flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Security Tips
+                </h4>
+                <div className="grid gap-2">
                   {challenge.hints.map((hint, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-accent">•</span>
-                      {hint}
-                    </li>
+                    <div key={index} className="flex items-start gap-3 text-sm group">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center mt-0.5 group-hover:bg-accent/30 transition-colors">
+                        <span className="text-xs font-bold text-accent">{index + 1}</span>
+                      </div>
+                      <span className="text-muted-foreground group-hover:text-foreground transition-colors">{hint}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
